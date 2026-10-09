@@ -64,7 +64,9 @@ export const TeacherDashboard: React.FC = () => {
   };
 
   const filteredStudents = (data?.students || []).filter((s: any) =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (s.grade && s.grade.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (s.school && s.school.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -226,7 +228,7 @@ export const TeacherDashboard: React.FC = () => {
                     <span className="text-2xl">{st.avatar}</span>
                     <div>
                       <div className="text-sm font-black text-slate-800">{st.name}</div>
-                      <div className="text-[11px] text-slate-400 font-semibold">{st.grade}</div>
+                      <div className="text-[11px] text-slate-400 font-semibold">{st.grade} • {st.school || 'Tiểu học Lê Quý Đôn'}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -251,9 +253,13 @@ export const TeacherDashboard: React.FC = () => {
                   <div className="text-5xl">{selectedStudent.avatar}</div>
                   <div>
                     <h3 className="text-xl font-black text-slate-800">{selectedStudent.name}</h3>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs">
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs">
                         {selectedStudent.grade}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-900 font-bold text-xs flex items-center gap-1">
+                        <School className="w-3.5 h-3.5 text-amber-700" />
+                        <span>{selectedStudent.school || 'Tiểu học Lê Quý Đôn'}</span>
                       </span>
                       <span className="text-xs font-semibold text-slate-400">
                         Chuỗi chăm đọc: {selectedStudent.streak || 3} ngày 🔥

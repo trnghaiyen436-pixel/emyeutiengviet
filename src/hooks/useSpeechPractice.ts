@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { sounds } from '../utils/soundEffects';
-import { fireFlowerCelebration } from '../utils/confettiFlower';
+import { fireFlowerCelebration, fireworksShow } from '../utils/confettiFlower';
 
 export interface PhoneticAnalysisResult {
   isCorrect: boolean;
@@ -100,7 +100,15 @@ export function useSpeechPractice() {
   );
 
   const stopListeningAndAnalyze = useCallback(
-    async (targetText: string, lessonId: number, studentName: string, studentAvatar: string, customSpokenText?: string) => {
+    async (
+      targetText: string,
+      lessonId: number,
+      studentName: string,
+      studentAvatar: string,
+      customSpokenText?: string,
+      studentGrade: string = 'Lớp 1A',
+      studentSchool: string = 'Tiểu học Lê Quý Đôn'
+    ) => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -139,7 +147,8 @@ export function useSpeechPractice() {
           body: JSON.stringify({
             studentName,
             avatar: studentAvatar,
-            grade: 'Lớp 1A',
+            grade: studentGrade,
+            school: studentSchool,
             lessonId,
             text: targetText,
             isCorrect: data.isCorrect,
@@ -147,10 +156,12 @@ export function useSpeechPractice() {
           }),
         });
 
-        // Trigger celebratory flower and sounds
+        // Trigger celebratory applause, fireworks, flowers and cheerful sounds
         if (data.isCorrect) {
+          sounds.playApplauseSound();
           sounds.playSuccessSound();
           sounds.playFlowerCelebration();
+          fireworksShow();
           fireFlowerCelebration();
         } else {
           sounds.playTryAgainSound();
@@ -174,7 +185,10 @@ export function useSpeechPractice() {
         };
         setAnalysisResult(fallbackResult);
         if (fallbackResult.isCorrect) {
+          sounds.playApplauseSound();
           sounds.playSuccessSound();
+          sounds.playFlowerCelebration();
+          fireworksShow();
           fireFlowerCelebration();
         } else {
           sounds.playTryAgainSound();

@@ -1,31 +1,31 @@
 import React from 'react';
-import { Sparkles, Trophy, BookOpen, Mic, School, Volume2, Award } from 'lucide-react';
+import { Sparkles, Trophy, BookOpen, Mic, School, Volume2, Award, UserCheck, Edit3 } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: 'practice' | 'leaderboard' | 'phonetic-lab' | 'teacher';
   setCurrentTab: (tab: 'practice' | 'leaderboard' | 'phonetic-lab' | 'teacher') => void;
   studentName: string;
-  setStudentName: (name: string) => void;
+  studentGrade: string;
+  studentSchool: string;
   studentAvatar: string;
-  setStudentAvatar: (avatar: string) => void;
   studentPoints: number;
   studentFlowers: number;
   streak: number;
+  onOpenProfileModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
   setCurrentTab,
   studentName,
-  setStudentName,
+  studentGrade,
+  studentSchool,
   studentAvatar,
-  setStudentAvatar,
   studentPoints,
   studentFlowers,
   streak,
+  onOpenProfileModal,
 }) => {
-  const avatarList = ['👦', '👧', '🦁', '🐰', '🐼', '🐱', '⭐', '🚀'];
-
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-amber-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6">
@@ -51,50 +51,63 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Student Status & Gamification Stats */}
-          <div className="flex items-center gap-2 sm:gap-3 bg-amber-50/80 px-3 py-1.5 rounded-2xl border border-amber-200">
-            {/* Student avatar selector popup */}
-            <div className="flex items-center gap-2">
-              <select
-                aria-label="Chọn avatar của bé"
-                value={studentAvatar}
-                onChange={(e) => setStudentAvatar(e.target.value)}
-                className="text-2xl bg-white border border-amber-300 rounded-xl px-1 py-0.5 cursor-pointer hover:border-amber-500 transition-colors"
-              >
-                {avatarList.map((av) => (
-                  <option key={av} value={av}>{av}</option>
-                ))}
-              </select>
-              <div className="hidden sm:block">
-                <input
-                  type="text"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  placeholder="Tên của bé"
-                  className="font-bold text-sm text-slate-800 bg-transparent border-b border-dashed border-amber-400 focus:outline-none focus:border-amber-600 w-28"
-                  title="Nhấn để đổi tên học sinh"
-                />
-                <div className="text-[10px] text-amber-700 font-semibold">Lớp 1A - Trường Tiểu học</div>
+          {/* Student Status & Profile Button (Điền Tên, Lớp, Trường) */}
+          <div className="flex items-center gap-2 sm:gap-3 bg-amber-50/90 px-3 py-1.5 rounded-2xl border-2 border-amber-300 shadow-xs">
+            {/* Clickable student badge with prominent button */}
+            <button
+              onClick={onOpenProfileModal}
+              className="flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer text-left group"
+              title="Nhấn để điền Tên, Lớp, Trường của bé"
+            >
+              <div className="text-2xl sm:text-3xl bg-white rounded-xl p-1 border border-amber-300 shadow-xs group-hover:scale-105 transition-transform">
+                {studentAvatar}
               </div>
-            </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-xs sm:text-sm text-slate-800 group-hover:text-rose-600 transition-colors">
+                    {studentName}
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-rose-500 text-white text-[10px] font-black">
+                    {studentGrade}
+                  </span>
+                </div>
+                <div className="text-[11px] text-amber-900 font-bold flex items-center gap-1 truncate max-w-[140px] sm:max-w-[200px]">
+                  <span>{studentSchool}</span>
+                </div>
+              </div>
+              
+              {/* Highlight button: Điền Tên, Lớp, Trường */}
+              <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-200/90 hover:bg-amber-300 text-amber-900 font-black text-xs transition-all shadow-2xs ml-1">
+                <Edit3 className="w-3.5 h-3.5 text-amber-800" />
+                <span>Điền Tên, Lớp, Trường</span>
+              </div>
+            </button>
 
-            <div className="h-6 w-px bg-amber-200 mx-1"></div>
+            {/* Mobile icon for profile edit */}
+            <button
+              onClick={onOpenProfileModal}
+              className="md:hidden p-1.5 rounded-xl bg-amber-200 text-amber-900 font-bold cursor-pointer"
+              title="Điền Tên, Lớp, Trường"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="h-6 w-px bg-amber-300 mx-0.5"></div>
 
             {/* Flowers counter */}
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-rose-100/80 text-rose-700 font-black text-sm shadow-inner" title="Hoa điểm 10 bé nhận được">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-rose-100 text-rose-700 font-black text-xs sm:text-sm shadow-inner" title="Hoa điểm 10 bé nhận được">
               <span className="text-base animate-bounce">🌸</span>
               <span>{studentFlowers}</span>
-              <span className="hidden md:inline text-xs font-semibold">hoa</span>
             </div>
 
             {/* Stars & Points */}
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-amber-100/80 text-amber-800 font-black text-sm shadow-inner" title="Điểm sao tích lũy">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-amber-100 text-amber-800 font-black text-xs sm:text-sm shadow-inner" title="Điểm sao tích lũy">
               <span className="text-base text-amber-500">⭐</span>
               <span>{studentPoints}</span>
             </div>
 
             {/* Streak */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-orange-100/80 text-orange-700 font-black text-xs" title="Chuỗi ngày luyện đọc">
+            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-xl bg-orange-100 text-orange-700 font-black text-xs" title="Chuỗi ngày luyện đọc">
               <span>🔥</span>
               <span>{streak}</span>
             </div>

@@ -7,6 +7,7 @@ interface StudentLeaderboardItem {
   name: string;
   avatar: string;
   grade: string;
+  school?: string;
   points: number;
   flowers: number;
   lessonsCompleted: number[];
@@ -15,6 +16,8 @@ interface StudentLeaderboardItem {
 
 interface LeaderboardViewProps {
   currentStudentName: string;
+  currentStudentGrade: string;
+  currentStudentSchool: string;
   currentStudentAvatar: string;
   currentStudentPoints: number;
   currentStudentFlowers: number;
@@ -23,6 +26,8 @@ interface LeaderboardViewProps {
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   currentStudentName,
+  currentStudentGrade,
+  currentStudentSchool,
   currentStudentAvatar,
   currentStudentPoints,
   currentStudentFlowers,
@@ -60,6 +65,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   if (existingIndex >= 0) {
     allStudents[existingIndex] = {
       ...allStudents[existingIndex],
+      grade: currentStudentGrade,
+      school: currentStudentSchool,
       points: Math.max(allStudents[existingIndex].points, currentStudentPoints),
       flowers: Math.max(allStudents[existingIndex].flowers, currentStudentFlowers),
       streak: Math.max(allStudents[existingIndex].streak, currentStreak),
@@ -70,7 +77,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
       id: 'current-user',
       name: currentStudentName,
       avatar: currentStudentAvatar,
-      grade: 'Lớp 1A',
+      grade: currentStudentGrade,
+      school: currentStudentSchool,
       points: currentStudentPoints,
       flowers: currentStudentFlowers,
       lessonsCompleted: [1, 2],
@@ -156,7 +164,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
               </div>
               <div className="text-5xl mt-3 mb-2">{top3[1].avatar}</div>
               <h3 className="text-base font-black text-slate-800">{top3[1].name}</h3>
-              <span className="text-xs font-bold text-slate-400">{top3[1].grade}</span>
+              <span className="text-xs font-bold text-slate-500">{top3[1].grade} • {top3[1].school || 'Tiểu học Lê Quý Đôn'}</span>
               <div className="mt-4 flex items-center gap-2">
                 <span className="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-800 text-xs font-black">
                   ⭐ {top3[1].points}
@@ -182,7 +190,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                 </div>
               </div>
               <h3 className="text-lg font-black text-slate-800">{top3[0].name}</h3>
-              <span className="text-xs font-bold text-amber-700">{top3[0].grade}</span>
+              <span className="text-xs font-bold text-amber-800">{top3[0].grade} • {top3[0].school || 'Tiểu học Lê Quý Đôn'}</span>
               <div className="mt-4 flex items-center gap-2">
                 <span className="px-3 py-1 rounded-xl bg-amber-400 text-yellow-950 text-sm font-black shadow-xs">
                   ⭐ {top3[0].points} điểm
@@ -206,7 +214,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
               </div>
               <div className="text-5xl mt-3 mb-2">{top3[2].avatar}</div>
               <h3 className="text-base font-black text-slate-800">{top3[2].name}</h3>
-              <span className="text-xs font-bold text-slate-400">{top3[2].grade}</span>
+              <span className="text-xs font-bold text-slate-500">{top3[2].grade} • {top3[2].school || 'Tiểu học Lê Quý Đôn'}</span>
               <div className="mt-4 flex items-center gap-2">
                 <span className="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-800 text-xs font-black">
                   ⭐ {top3[2].points}
@@ -263,7 +271,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-slate-400 font-semibold">{st.grade}</div>
+                    <div className="text-xs text-slate-400 font-semibold">{st.grade} • {st.school || 'Tiểu học Lê Quý Đôn'}</div>
                   </div>
                 </div>
 

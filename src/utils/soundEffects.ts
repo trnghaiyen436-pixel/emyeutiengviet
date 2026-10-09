@@ -15,6 +15,82 @@ class SoundManager {
     }
   }
 
+  // Tiếng vỗ tay hoan hô ròn rã của cả lớp (Applause & Cheering)
+  playApplauseSound() {
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const ctx = this.ctx;
+      const duration = 2.8; // 2.8 giây vỗ tay tưng bừng
+      const now = ctx.currentTime;
+
+      // 1. Tạo tiếng vỗ tay từ noise buffer với nhiều nhịp vỗ tay chồng lên nhau
+      const bufferSize = ctx.sampleRate * duration;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Điền white noise
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = buffer;
+
+      // Bandpass filter để tạo âm thanh vỗ tay vào lòng bàn tay (1200Hz - 2200Hz)
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, now);
+      filter.Q.setValueAtTime(2.2, now);
+
+      // Gain Envelope chính (tăng dần rồi giảm êm)
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0, now);
+      masterGain.gain.linearRampToValueAtTime(0.35, now + 0.3);
+      masterGain.gain.setValueAtTime(0.35, now + 1.8);
+      masterGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      // Điều chế biên độ dày đặc để mô phỏng từng nhịp vỗ tay của hàng chục học sinh
+      const clapGain = ctx.createGain();
+      const numClaps = 65; // 65 nhịp vỗ tay ngẫu nhiên trong thời gian phát
+      for (let c = 0; c < numClaps; c++) {
+        const t = now + Math.random() * (duration - 0.4);
+        const clapVolume = 0.4 + Math.random() * 0.6;
+        clapGain.gain.setValueAtTime(clapVolume, t);
+        clapGain.gain.exponentialRampToValueAtTime(0.05, t + 0.035);
+      }
+
+      noiseSource.connect(filter);
+      filter.connect(clapGain);
+      clapGain.connect(masterGain);
+      masterGain.connect(ctx.destination);
+
+      noiseSource.start(now);
+      noiseSource.stop(now + duration);
+
+      // 2. Kèm hợp âm kèn pháo hoa chúc mừng rực rỡ C5 - E5 - G5 - C6 - E6
+      const fanfarePitches = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+      fanfarePitches.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+        g.gain.setValueAtTime(0, now + idx * 0.08);
+        g.gain.linearRampToValueAtTime(0.25, now + idx * 0.08 + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.6);
+
+        osc.connect(g);
+        g.connect(ctx.destination);
+
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.65);
+      });
+    } catch (e) {
+      console.warn('Applause sound error:', e);
+    }
+  }
+
   // Tiếng leng keng chúc mừng rực rỡ khi đọc đúng
   playSuccessSound() {
     try {

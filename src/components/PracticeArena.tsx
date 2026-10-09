@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Lesson, VocabularyItem } from '../data/lessonsData';
 import { useSpeechPractice } from '../hooks/useSpeechPractice';
 import { sounds } from '../utils/soundEffects';
+import { fireworksShow, fireFlowerCelebration } from '../utils/confettiFlower';
 import {
   Volume2,
   Mic,
@@ -21,6 +22,8 @@ import {
 interface PracticeArenaProps {
   lesson: Lesson;
   studentName: string;
+  studentGrade: string;
+  studentSchool: string;
   studentAvatar: string;
   onSuccessRead: (points: number, flowers: number) => void;
   onGoToNextLesson: () => void;
@@ -29,6 +32,8 @@ interface PracticeArenaProps {
 export const PracticeArena: React.FC<PracticeArenaProps> = ({
   lesson,
   studentName,
+  studentGrade,
+  studentSchool,
   studentAvatar,
   onSuccessRead,
   onGoToNextLesson,
@@ -121,7 +126,7 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({
   // Toggle mic recording
   const handleToggleMic = () => {
     if (isListening) {
-      stopListeningAndAnalyze(currentTarget.text, lesson.id, studentName, studentAvatar);
+      stopListeningAndAnalyze(currentTarget.text, lesson.id, studentName, studentAvatar, undefined, studentGrade, studentSchool);
     } else {
       startListening(currentTarget.text, lesson.id, studentName);
     }
@@ -130,7 +135,7 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({
   // Evaluate manual simulated voice
   const handleEvaluateCustom = () => {
     if (!simulatedVoiceText.trim()) return;
-    stopListeningAndAnalyze(currentTarget.text, lesson.id, studentName, studentAvatar, simulatedVoiceText);
+    stopListeningAndAnalyze(currentTarget.text, lesson.id, studentName, studentAvatar, simulatedVoiceText, studentGrade, studentSchool);
   };
 
   // Trigger success reward callback
@@ -474,28 +479,35 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({
         {analysisResult && (
           <div className="mt-8 pt-6 border-t-2 border-dashed border-amber-200 animate-fadeIn">
             {analysisResult.isCorrect ? (
-              /* ĐỌC ĐÚNG: HOA VÀ ÂM THANH CHÚC MỪNG KHÍCH LỆ */
+              /* ĐỌC ĐÚNG: HOA, TIẾNG VỖ TAY VÀ PHÁO HOA ĐỘNG VIÊN */
               <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 text-white shadow-xl relative overflow-hidden">
                 <div className="absolute right-4 top-2 text-7xl opacity-20 select-none animate-bounce">
-                  🌸🌺🌼
+                  🎆🎇🌸
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4 text-center sm:text-left">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl shadow-inner shrink-0">
-                      🌸
+                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl shadow-inner shrink-0 relative">
+                      <span>🌸</span>
+                      <span className="absolute -bottom-1 -right-1 text-xl animate-bounce">👏</span>
                     </div>
                     <div>
-                      <div className="flex items-center justify-center sm:justify-start gap-2">
-                        <span className="px-3 py-0.5 rounded-full bg-yellow-300 text-yellow-950 font-black text-xs uppercase tracking-wider">
-                          Đọc Đúng Xuất Sắc! +20 Điểm
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <span className="px-3 py-0.5 rounded-full bg-yellow-300 text-yellow-950 font-black text-xs uppercase tracking-wider flex items-center gap-1">
+                          <span>🎆</span>
+                          <span>Đọc Đúng Xuất Sắc! +20 Điểm</span>
+                        </span>
+                        <span className="bg-white/30 text-white px-2 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
+                          <span>👏</span>
+                          <span>Cả lớp vỗ tay hoan hô!</span>
                         </span>
                         <span className="bg-white/30 text-white px-2 py-0.5 rounded-full text-xs font-black">
                           Độ chuẩn: {analysisResult.accuracyScore}%
                         </span>
                       </div>
-                      <h3 className="text-2xl sm:text-3xl font-black mt-1">
-                        Bé Đọc Giỏi Lắm! Tặng Bé Bông Hoa Điểm 10!
+                      <h3 className="text-2xl sm:text-3xl font-black mt-1 flex items-center gap-2 justify-center sm:justify-start">
+                        <span>Bé Đọc Giỏi Lắm! Tặng Bé Hoa Điểm 10!</span>
+                        <span className="animate-pulse">🎆</span>
                       </h3>
                       <p className="text-emerald-100 text-xs sm:text-sm font-semibold mt-0.5">
                         {analysisResult.mouthGuideTip || 'Bé phát âm to, tròn vành rõ chữ và đúng chuẩn ngữ âm Tiếng Việt.'}
@@ -503,13 +515,28 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleNextItem}
-                    className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-emerald-800 hover:bg-yellow-100 font-black text-sm sm:text-base shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
-                  >
-                    <span>Luyện Từ Tiếp Theo</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => {
+                        sounds.playApplauseSound();
+                        sounds.playFlowerCelebration();
+                        fireworksShow();
+                        fireFlowerCelebration();
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-black text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                      title="Bắn pháo hoa và nghe tiếng vỗ tay lại"
+                    >
+                      <span>🎆👏</span>
+                      <span>Vỗ tay & Pháo hoa</span>
+                    </button>
+                    <button
+                      onClick={handleNextItem}
+                      className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-emerald-800 hover:bg-yellow-100 font-black text-sm sm:text-base shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+                    >
+                      <span>Luyện Từ Tiếp Theo</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Phonetic confirmation breakdown */}

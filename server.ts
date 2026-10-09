@@ -20,6 +20,7 @@ interface StudentRecord {
   name: string;
   avatar: string;
   grade: string;
+  school: string;
   points: number;
   flowers: number;
   lessonsCompleted: number[];
@@ -40,6 +41,7 @@ let studentsDatabase: StudentRecord[] = [
     name: 'Bé Lê Bảo Nam',
     avatar: '👦',
     grade: 'Lớp 1A',
+    school: 'Tiểu học Lê Quý Đôn',
     points: 1250,
     flowers: 42,
     lessonsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -54,6 +56,7 @@ let studentsDatabase: StudentRecord[] = [
     name: 'Bé Trần Thu Hà',
     avatar: '👧',
     grade: 'Lớp 1A',
+    school: 'Tiểu học Lê Quý Đôn',
     points: 1180,
     flowers: 39,
     lessonsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
@@ -67,6 +70,7 @@ let studentsDatabase: StudentRecord[] = [
     name: 'Bé Nguyễn Minh Khôi',
     avatar: '🦁',
     grade: 'Lớp 1B',
+    school: 'Tiểu học Kim Đồng',
     points: 980,
     flowers: 31,
     lessonsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
@@ -80,6 +84,7 @@ let studentsDatabase: StudentRecord[] = [
     name: 'Bé Hoàng Mai Anh',
     avatar: '🌸',
     grade: 'Lớp 1A',
+    school: 'Tiểu học Lê Quý Đôn',
     points: 920,
     flowers: 28,
     lessonsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -93,6 +98,7 @@ let studentsDatabase: StudentRecord[] = [
     name: 'Bé Đỗ Đức Trọng',
     avatar: '🚀',
     grade: 'Lớp 1B',
+    school: 'Tiểu học Chu Văn An',
     points: 840,
     flowers: 25,
     lessonsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -259,7 +265,7 @@ app.get('/api/leaderboard', (req, res) => {
 
 // API: Record student reading test
 app.post('/api/record-result', (req, res) => {
-  const { studentName, avatar, grade = 'Lớp 1A', lessonId, text, isCorrect, accuracy } = req.body;
+  const { studentName, avatar, grade = 'Lớp 1A', school = 'Tiểu học Lê Quý Đôn', lessonId, text, isCorrect, accuracy } = req.body;
 
   let student = studentsDatabase.find((s) => s.name.toLowerCase() === (studentName || '').toLowerCase());
 
@@ -269,6 +275,7 @@ app.post('/api/record-result', (req, res) => {
       name: studentName || 'Bé Chăm Chỉ',
       avatar: avatar || '⭐',
       grade,
+      school,
       points: 0,
       flowers: 0,
       lessonsCompleted: [],
@@ -276,6 +283,11 @@ app.post('/api/record-result', (req, res) => {
       streak: 1,
     };
     studentsDatabase.push(student);
+  } else {
+    // update grade and school if provided
+    if (grade) student.grade = grade;
+    if (school) student.school = school;
+    if (avatar) student.avatar = avatar;
   }
 
   if (isCorrect) {

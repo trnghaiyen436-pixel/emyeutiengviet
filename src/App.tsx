@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LESSONS_DATA } from './data/lessonsData';
 import { Header } from './components/Header';
 import { LessonSelector } from './components/LessonSelector';
@@ -6,6 +6,7 @@ import { PracticeArena } from './components/PracticeArena';
 import { PhoneticLab } from './components/PhoneticLab';
 import { LeaderboardView } from './components/LeaderboardView';
 import { TeacherDashboard } from './components/TeacherDashboard';
+import { StudentProfileModal } from './components/StudentProfileModal';
 import { sounds } from './utils/soundEffects';
 import { Sparkles, BookOpen, Volume2, Award, Heart, HelpCircle, ShieldCheck } from 'lucide-react';
 
@@ -14,18 +15,73 @@ export default function App() {
   const [currentLessonId, setCurrentLessonId] = useState<number>(1);
   const [completedLessons, setCompletedLessons] = useState<number[]>([1]);
 
-  // Student Profile State
-  const [studentName, setStudentName] = useState<string>('Bé Lê Bảo Nam');
-  const [studentAvatar, setStudentAvatar] = useState<string>('👦');
-  const [studentPoints, setStudentPoints] = useState<number>(240);
-  const [studentFlowers, setStudentFlowers] = useState<number>(12);
+  // Student Profile State with LocalStorage persistence
+  const [studentName, setStudentName] = useState<string>(() => {
+    return localStorage.getItem('tv1_student_name') || 'Bé Lê Bảo Nam';
+  });
+  const [studentGrade, setStudentGrade] = useState<string>(() => {
+    return localStorage.getItem('tv1_student_grade') || 'Lớp 1A';
+  });
+  const [studentSchool, setStudentSchool] = useState<string>(() => {
+    return localStorage.getItem('tv1_student_school') || 'Tiểu học Lê Quý Đôn';
+  });
+  const [studentAvatar, setStudentAvatar] = useState<string>(() => {
+    return localStorage.getItem('tv1_student_avatar') || '👦';
+  });
+
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const [studentPoints, setStudentPoints] = useState<number>(() => {
+    const saved = localStorage.getItem('tv1_student_points');
+    return saved ? parseInt(saved, 10) : 240;
+  });
+  const [studentFlowers, setStudentFlowers] = useState<number>(() => {
+    const saved = localStorage.getItem('tv1_student_flowers');
+    return saved ? parseInt(saved, 10) : 12;
+  });
   const [streak, setStreak] = useState<number>(3);
 
   const currentLesson = LESSONS_DATA.find((l) => l.id === currentLessonId) || LESSONS_DATA[0];
 
+  const handleSaveProfile = (name: string, grade: string, school: string, avatar: string) => {
+    setStudentName(name);
+    setStudentGrade(grade);
+    setStudentSchool(school);
+    setStudentAvatar(avatar);
+
+    localStorage.setItem('tv1_student_name', name);
+    localStorage.setItem('tv1_student_grade', grade);
+    localStorage.setItem('tv1_student_school', school);
+    localStorage.setItem('tv1_student_avatar', avatar);
+
+    // Sync immediately to server
+    fetch('/api/record-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentName: name,
+        avatar,
+        grade,
+        school,
+        lessonId: currentLessonId,
+        text: 'Cập nhật hồ sơ học sinh',
+        isCorrect: true,
+        accuracy: 100,
+      }),
+    }).catch((err) => console.warn('Profile sync warning:', err));
+  };
+
   const handleSuccessRead = (earnedPoints: number, earnedFlowers: number) => {
-    setStudentPoints((prev) => prev + earnedPoints);
-    setStudentFlowers((prev) => prev + earnedFlowers);
+    setStudentPoints((prev) => {
+      const next = prev + earnedPoints;
+      localStorage.setItem('tv1_student_points', next.toString());
+      return next;
+    });
+    setStudentFlowers((prev) => {
+      const next = prev + earnedFlowers;
+      localStorage.setItem('tv1_student_flowers', next.toString());
+      return next;
+    });
     setCompletedLessons((prev) => (prev.includes(currentLessonId) ? prev : [...prev, currentLessonId]));
   };
 
@@ -47,17 +103,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FFFDF7] text-slate-800 flex flex-col font-['Nunito',sans-serif]">
-      {/* Header with gamification counters & tab switches */}
+      {/* Header with gamification counters, profile button & tab switches */}
       <Header
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
         studentName={studentName}
-        setStudentName={setStudentName}
+        studentGrade={studentGrade}
+        studentSchool={studentSchool}
         studentAvatar={studentAvatar}
-        setStudentAvatar={setStudentAvatar}
         studentPoints={studentPoints}
         studentFlowers={studentFlowers}
         streak={streak}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
       />
 
       {/* Main Content Arena */}
@@ -76,6 +133,8 @@ export default function App() {
             <PracticeArena
               lesson={currentLesson}
               studentName={studentName}
+              studentGrade={studentGrade}
+              studentSchool={studentSchool}
               studentAvatar={studentAvatar}
               onSuccessRead={handleSuccessRead}
               onGoToNextLesson={handleGoToNextLesson}
@@ -93,6 +152,8 @@ export default function App() {
         {currentTab === 'leaderboard' && (
           <LeaderboardView
             currentStudentName={studentName}
+            currentStudentGrade={studentGrade}
+            currentStudentSchool={studentSchool}
             currentStudentAvatar={studentAvatar}
             currentStudentPoints={studentPoints}
             currentStudentFlowers={studentFlowers}
@@ -104,6 +165,17 @@ export default function App() {
           <TeacherDashboard />
         )}
       </main>
+
+      {/* Modal điền tên, lớp, trường của học sinh */}
+      <StudentProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        studentName={studentName}
+        studentGrade={studentGrade}
+        studentSchool={studentSchool}
+        studentAvatar={studentAvatar}
+        onSave={handleSaveProfile}
+      />
 
       {/* Primary-school Friendly Footer */}
       <footer className="mt-auto border-t-2 border-amber-200/60 bg-amber-50/60 py-6 px-4 pb-14 sm:pb-6">
