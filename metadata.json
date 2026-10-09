@@ -1,0 +1,11 @@
+{
+  "name": "Bé Vui Đọc Tiếng Việt 1 - Game Luyện Đọc & Phát Âm AI",
+  "description": "Trò chơi rèn đọc và kiểm tra phát âm tương tác cho học sinh lớp 1 theo sách Kết Nối Tri Thức, tích hợp AI phân tích âm vần thời gian thực, hoa chúc mừng, bảng xếp hạng và theo dõi tiến độ giáo viên.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
